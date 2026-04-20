@@ -1,8 +1,10 @@
 <?php
+session_start();
 $con = mysqli_connect("localhost", "root", "", "to-do");
 if(!$con){
     die("Connection failed: " . mysqli_connect_error());
 }
+$user_id = $_SESSION['user_id'] ?? '';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -36,11 +38,17 @@ if(!$con){
     </style>
 </head>
 <body>
-    <nav class="sticky-top navbar navbar-light bg-dark">
-            <a class="navbar-brand p-2" href="#">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
                 <img src="logo.jpg" width="50" height="50" alt="">
             </a>
-            <h2 class="text-center p-2" style="color: white;">To-Do Task App</h2>
+            <span class="navbar-brand mb-0 h1">To-Do Task App</span>
+            <div class="ms-auto">
+                <a href="login.php" class="btn btn-outline-light me-2">Login</a>
+                <a href="register.php" class="btn btn-primary">Register</a>
+            </div>
+        </div>
     </nav>
 
     <div class="row align-items-center justify-content-center">
@@ -62,7 +70,7 @@ if(!$con){
                             </thead>
                             <tbody>
                                 <?php
-                                $result = $con->query("SELECT * FROM tasks ORDER BY id DESC");
+                                $result = $con->query("SELECT * FROM tasks WHERE user_id = $user_id ORDER BY id DESC");
                                 if ($result->num_rows > 0) {
                                     while($row = $result->fetch_assoc()) {
                                         echo "<tr>";

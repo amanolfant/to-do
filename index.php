@@ -1,4 +1,5 @@
 <?php
+session_start();
 $con = mysqli_connect("localhost", "root", "", "to-do");
 if(!$con){
     die("Connection failed: " . mysqli_connect_error());
@@ -8,11 +9,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $description = $_POST['description'] ?? '';
     $priority = $_POST['priority'] ?? '';
     $due_date = $_POST['due_date'] ?? '';
+    $user_id = $_SESSION['user_id'] ?? '';
 
-    $stmt = $con->prepare("INSERT INTO tasks (title, description, priority, due_date, status) VALUES (?, ?, ?, ?, 'pending')");
-    $stmt->bind_param("ssss", $title, $description, $priority, $due_date);
+    $stmt = $con->prepare("INSERT INTO tasks (user_id, title, description, priority, due_date, status) VALUES (?, ?, ?, ?, ?, 'pending')");
+    $stmt->bind_param("issss", $user_id, $title, $description, $priority, $due_date);
 
     if ($stmt->execute()) {
+        // Send email notification
+        require 'sendmail.php';
+        $user_stmt = $con->prepare("SELECT email FROM users WHERE id = ?");
+        $user_stmt->bind_param("i", $user_id);
+        $user_stmt->execute();
+        $user_result = $user_stmt->get_result();
+        if ($user_row = $user_result->fetch_assoc()) {
+            sendTaskEmail($user_row['email'], $title);
+        }
+        $user_stmt->close();
+        
         echo "<script>alert ('New task added successfully');
         window.location.href='display.php';
         </script>";
@@ -61,11 +74,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </head>
 <body >
     <!-- Just an image -->
-    <nav class="sticky-top navbar navbar-light bg-dark">
-        <a class="navbar-brand p-2" href="#">
-            <img src="logo.jpg" width="50" height="50" alt="">
-        </a>
-        <h2 class="text-center" style="color: white;">To-Do Task App</h2>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <img src="logo.jpg" width="50" height="50" alt="">
+            </a>
+            <span class="navbar-brand mb-0 h1">To-Do Task App</span>
+            <div class="ms-auto">
+                <a href="login.php" class="btn btn-outline-light me-2">Login</a>
+                <a href="register.php" class="btn btn-primary">Register</a>
+            </div>
+        </div>
     </nav>
 
     <div class="row align-items-center justify-content-center">
