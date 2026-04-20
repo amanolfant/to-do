@@ -5,6 +5,15 @@ if(!isset($_SESSION['user_id'])){
     exit;
 }
 $con = mysqli_connect("localhost", "root", "", "to-do");
+
+// Get user name for welcome message
+$user_id = $_SESSION['user_id'];
+$user_stmt = $con->prepare("SELECT name FROM users WHERE id = ?");
+$user_stmt->bind_param("i", $user_id);
+$user_stmt->execute();
+$user_result = $user_stmt->get_result();
+$user_name = $user_result->fetch_assoc()['name'] ?? 'User';
+$user_stmt->close();
 if(!$con){
     die("Connection failed: " . mysqli_connect_error());
 }
@@ -14,6 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $priority = $_POST['priority'] ?? '';
     $due_date = $_POST['due_date'] ?? '';
     $user_id = $_SESSION['user_id'] ?? '';
+    $email = $_SESSION['email'] ?? '';
 
     $stmt = $con->prepare("INSERT INTO tasks (user_id, title, description, priority, due_date, status) VALUES (?, ?, ?, ?, ?, 'pending')");
     $stmt->bind_param("issss", $user_id, $title, $description, $priority, $due_date);
@@ -84,7 +94,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <img src="logo.jpg" width="50" height="50" alt="">
             </a>
             <span class="navbar-brand mb-0 h1">To-Do Task App</span>
-            <div class="ms-auto">
+            <div class="ms-auto d-flex align-items-center">
+                <span class="text-white me-3">Welcome, <strong><?php echo $user_name; ?></strong></span>
                 <a href="display.php" class="btn btn-outline-light me-2">View Task</a>
                 <a href="logout.php" class="btn btn-danger" onclick="return confirm('Are you sure you want to logout?')">Logout</a>
             </div>

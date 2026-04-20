@@ -1,6 +1,6 @@
 <?php
 session_start();
 session_destroy();
-echo "<script>alert('Logged out successfully'); window.location.href='index.php';</script>";
+echo "<script>window.location.href='index.php';</script>";
 exit;
 ?>
