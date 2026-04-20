@@ -15,8 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if ($result->num_rows > 0) {
         $row = $result->fetch_assoc();
         $_SESSION['user_id'] = $row['id'];
-        echo "<script>alert ('Login successful');
-        window.location.href='index.php';
+        echo "<script>window.location.href='add_task.php';
         </script>";
     } else {
         echo "<script>alert('Invalid email or password');</script>";
@@ -140,7 +139,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </div>
 
         <div class="container text-center" style="background-color:#f1f1f1">
-            <a href="web.php" class="btn btn-secondary">Cancel</a>
+            <a href="index.php" class="btn btn-secondary">Cancel</a>
             <span class="psw">Forgot <a href="#">password?</a></span>
         </div>
     </form>

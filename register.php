@@ -5,6 +5,7 @@ if(!$con){
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $name = $_POST['name'] ?? '';
     $email = $_POST['email'] ?? '';
     $password = $_POST['psw'] ?? '';
     $confirm_password = $_POST['confirm_psw'] ?? '';
@@ -12,11 +13,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if ($password !== $confirm_password) {
         echo "<script>alert('Passwords do not match');</script>";
     } else {
-        $stmt = $con->prepare("INSERT INTO users (email, password) VALUES (?, ?)");
-        $stmt->bind_param("ss", $email, $password);
+        $stmt = $con->prepare("INSERT INTO users (name,email, password) VALUES (?, ?, ?)");
+        $stmt->bind_param("sss", $name, $email, $password);
 
         if ($stmt->execute()) {
-            echo "<script>alert ('New user registered successfully');
+            echo "<script>alert ('New user registered successfully please login to proceed further');
             window.location.href='login.php';
             </script>";
         } else {
@@ -118,6 +119,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <form action="register.php" method="post">
             <div class="container">
                 <h2 class="text-center mb-4">Register</h2>
+
+                <label for="name"><b>Name</b></label>
+                <input type="text" placeholder="Enter name" name="name" required>
                 
                 <label for="email"><b>Email</b></label>
                 <input type="email" placeholder="Enter Email" name="email" required>

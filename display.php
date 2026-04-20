@@ -1,10 +1,14 @@
 <?php
 session_start();
+if(!isset($_SESSION['user_id'])){
+    echo "<script>alert('Please login first'); window.location.href='login.php';</script>";
+    exit;
+}
 $con = mysqli_connect("localhost", "root", "", "to-do");
 if(!$con){
     die("Connection failed: " . mysqli_connect_error());
 }
-$user_id = $_SESSION['user_id'] ?? '';
+$user_id = $_SESSION['user_id'];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -45,8 +49,7 @@ $user_id = $_SESSION['user_id'] ?? '';
             </a>
             <span class="navbar-brand mb-0 h1">To-Do Task App</span>
             <div class="ms-auto">
-                <a href="login.php" class="btn btn-outline-light me-2">Login</a>
-                <a href="register.php" class="btn btn-primary">Register</a>
+                <a href="logout.php" class="btn btn-outline-light me-2" onclick="return confirm('Are you sure you want to logout?')">Logout</a>
             </div>
         </div>
     </nav>
@@ -54,7 +57,10 @@ $user_id = $_SESSION['user_id'] ?? '';
     <div class="row align-items-center justify-content-center">
         <div class="col-sm-10">
             <div class="card mt-5 mb-5">
-                <div class="card-header text-center bg-info"><h4 style="color: Dark-blue;">Tasks List</h4></div>
+                <div class="card-header text-center bg-info d-flex justify-content-between align-items-center">
+                    <h4 style="color: Dark-blue;" class="mb-0">Tasks List</h4>
+                    <a href="add_task.php" class="btn btn-primary btn-sm">Add Task</a>
+                </div>
                     <div class="card-body">
                         <table class="table table-bordered table-hover text-center">
                             <thead class="thead-primary">
@@ -65,12 +71,15 @@ $user_id = $_SESSION['user_id'] ?? '';
                                     <th scope="col">Priority</th>
                                     <th scope="col">Due Date</th>
                                     <th scope="col">Status</th>
-                                    <th scope="col">Mark as complete</th>
+                                    <th scope="col">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php
-                                $result = $con->query("SELECT * FROM tasks WHERE user_id = $user_id ORDER BY id DESC");
+                                $stmt = $con->prepare("SELECT * FROM tasks WHERE user_id = ? ORDER BY id DESC");
+                                $stmt->bind_param("i", $user_id);
+                                $stmt->execute();
+                                $result = $stmt->get_result();
                                 if ($result->num_rows > 0) {
                                     while($row = $result->fetch_assoc()) {
                                         echo "<tr>";
@@ -81,15 +90,16 @@ $user_id = $_SESSION['user_id'] ?? '';
                                         echo "<td>" . $row["due_date"] . "</td>";
                                         $status = $row["status"] ?? 'pending';
                                         echo "<td style='background-color: " . ($status == 'completed' ? 'lightgreen' : 'lightcoral') . "'>" . $status . "</td>" ;
-                                        echo "<td><a class='btn btn-success' href='complete_task.php?id=" . $row["id"] . "'>Complete</a>
-                                            <a class='btn btn-danger' href='delete_task.php?id=" . $row["id"] . "'>Delete</a>
-                                            <a class='btn btn-warning' href='update_task.php?id=" . $row["id"] . "'>Update</a></td>";
+                                        echo "<td><a class='btn btn-success' href='complete_task.php?id=" . $row["id"] . "' onclick='return confirm(\"Are you sure you want to complete this task?\")'>Complete</a>
+                                            <a class='btn btn-danger' href='delete_task.php?id=" . $row["id"] . "' onclick='return confirm(\"Are you sure you want to delete this task?\")'>Delete</a>
+                                            <a class='btn btn-warning' href='update.php?id=" . $row["id"] . "'>Update</a></td>";
                                         echo "</tr>";
                                     }
                                 }
                                 else {
                                     echo "<tr><td colspan='4'>No tasks found</td></tr>";
                                 }
+                                $stmt->close();
                                 ?>
                             </tbody>
                         </table>

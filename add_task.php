@@ -1,5 +1,9 @@
 <?php
 session_start();
+if(!isset($_SESSION['user_id'])){
+    echo "<script>alert('Please login first'); window.location.href='login.php';</script>";
+    exit;
+}
 $con = mysqli_connect("localhost", "root", "", "to-do");
 if(!$con){
     die("Connection failed: " . mysqli_connect_error());
@@ -81,8 +85,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </a>
             <span class="navbar-brand mb-0 h1">To-Do Task App</span>
             <div class="ms-auto">
-                <a href="login.php" class="btn btn-outline-light me-2">Login</a>
-                <a href="register.php" class="btn btn-primary">Register</a>
+                <a href="display.php" class="btn btn-outline-light me-2">View Tasks</a>
+                <a href="logout.php" class="btn btn-danger" onclick="return confirm('Are you sure you want to logout?')">Logout</a>
             </div>
         </div>
     </nav>
@@ -113,7 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <input type="date" class="form-control mb-3" name="due_date" id="due_date" required>
 
                         <button class="btn btn-success" type="submit">Add Task</button>
-                        <a href="display.php" class="btn btn-primary">view Tasks</a>
+                        <!-- <a href="display.php" class="btn btn-primary">view Tasks</a> -->
                     </form>
                 <!-- <a href="#" class="btn btn-primary">Go somewhere</a> -->
                 </div>
