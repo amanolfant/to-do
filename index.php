@@ -1,79 +1,76 @@
-<?php
-session_start();
-$con = mysqli_connect("localhost", "root", "", "to-do");
-if(!$con){
-    die("Connection failed: " . mysqli_connect_error());
-}
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $title = $_POST['title'] ?? '';
-    $description = $_POST['description'] ?? '';
-    $priority = $_POST['priority'] ?? '';
-    $due_date = $_POST['due_date'] ?? '';
-    $user_id = $_SESSION['user_id'] ?? '';
-
-    $stmt = $con->prepare("INSERT INTO tasks (user_id, title, description, priority, due_date, status) VALUES (?, ?, ?, ?, ?, 'pending')");
-    $stmt->bind_param("issss", $user_id, $title, $description, $priority, $due_date);
-
-    if ($stmt->execute()) {
-        // Send email notification
-        require 'sendmail.php';
-        $user_stmt = $con->prepare("SELECT email FROM users WHERE id = ?");
-        $user_stmt->bind_param("i", $user_id);
-        $user_stmt->execute();
-        $user_result = $user_stmt->get_result();
-        if ($user_row = $user_result->fetch_assoc()) {
-            sendTaskEmail($user_row['email'], $title);
-        }
-        $user_stmt->close();
-        
-        echo "<script>alert ('New task added successfully');
-        window.location.href='display.php';
-        </script>";
-    } else {
-        echo "Error: " . $stmt->error;
-    }
-    $stmt->close();
-}
-
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>to-do task app</title>
+    <title>To-Do Task App - Home</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <style>
-        body{
-            background-color: lightgray
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #f1f1f1;
         }
-        .card {
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        .btn:hover {
-            background-color: #0056b3;
-            color: white;
-        }
-         .navbar-brand img {
-            border-radius: 50%;
-        }
-        footer {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-        }
-        #grad1 {
-            background-color: red; /* For browsers that do not support gradients */
-            background-image: linear-gradient(to right, red , yellow);
-        }
-        /* #grad {
-            background-image: linear-gradient(to right, rgba(255,0,0,0), rgba(255,0,0,1));
-        } */
-    </style>
 
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 100px 0;
+            min-height: 80vh;
+            display: flex;
+            align-items: center;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            margin: 15px 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .btn-primary {
+            background-color: #4CAF50;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+        }
+
+        .btn-primary:hover {
+            background-color: #45a049;
+        }
+
+        .btn-outline {
+            border: 2px solid white;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 5px;
+        }
+
+        .btn-outline:hover {
+            background-color: white;
+            color: #667eea;
+        }
+
+        footer {
+            background-color: #333;
+            color: white;
+            padding: 20px 0;
+        }
+    </style>
 </head>
-<body >
-    <!-- Just an image -->
+<body>
+    
+    <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
         <div class="container">
             <a class="navbar-brand" href="#">
@@ -87,60 +84,80 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </div>
     </nav>
 
-    <div class="row align-items-center justify-content-center">
-        <div class="col-sm-6">
-            <div class="card mt-5 mb-5" >
-                <div class="card-header text-center bg-warning" id="grad1"><h4 style="color: Dark-blue;">Add Tasks</h4></div>
-                <div class="card-body">
-                    <form method="POST" onsubmit="return validate_form()">
-                    <!-- <h2 class="text-center" style="background-color: #f8f9fa;">To-Do Task App</h2> -->
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container text-center">
+            <h1 class="display-3 mb-4">Organize Your Tasks Efficiently</h1>
+            <p class="lead mb-5">A simple and powerful to-do task management application to help you stay organized and productive.</p>
+            <div>
+                <a href="register.php" class="btn btn-light btn-lg me-3">Get Started</a>
+                <a href="login.php" class="btn btn-outline btn-lg">Login</a>
+            </div>
+        </div>
+    </section>
 
-                        <label class="form-label"><strong>Title</strong></label>
-                        <input type="text" class="form-control mb-3" placeholder="Enter task title" name="title" id="title" required>
-
-                        <label class="form-label"><strong>Description</strong></label>
-                        <textarea type="text" class="form-control mb-3" placeholder="Enter task description" name="description" id="description" required></textarea>
-
-                        <label class="form-label"><strong>Priority</strong></label>
-                        <select class="form-control mb-3" name="priority" id="priority" required>
-                            <option value="">Select Priority</option>
-                            <option value="low">Low</option>
-                            <option value="medium">Medium</option>
-                            <option value="high">High</option>
-                        </select>
-
-                        <label class="form-label"><strong>Due Date</strong></label>
-                        <input type="date" class="form-control mb-3" name="due_date" id="due_date" required>
-
-                        <button class="btn btn-success" type="submit">Add Task</button>
-                        <a href="display.php" class="btn btn-primary">view Tasks</a>
-                    </form>
-                <!-- <a href="#" class="btn btn-primary">Go somewhere</a> -->
+    <!-- Features Section -->
+    <section class="py-5">
+        <div class="container">
+            <h2 class="text-center mb-5">Features</h2>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="feature-card text-center">
+                        <div class="feature-icon">✓</div>
+                        <h4>Create Tasks</h4>
+                        <p> Easily add new tasks with title and description to keep track of what you need to do.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card text-center">
+                        <div class="feature-icon">✎</div>
+                        <h4>Edit Tasks</h4>
+                        <p>Update and modify your tasks whenever needed to keep your list up to date.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card text-center">
+                        <div class="feature-icon">🗑</div>
+                        <h4>Delete Tasks</h4>
+                        <p>Remove completed or unwanted tasks to keep your list clean and organized.</p>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    <footer class="navbar-fixed-bottom bg-dark text-center text-white p-3 mt-5">
-        <p>&copy; 2026 To-Do Task App. All rights reserved.</p>
+    </section>
+
+    <!-- About Section -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h2>Why Choose To-Do Task App?</h2>
+                    <p class="mt-3">Our application provides a simple and intuitive interface to manage your daily tasks. Stay organized, never miss a deadline, and increase your productivity.</p>
+                    <ul class="list-unstyled">
+                        <li>✓ Simple and user-friendly interface</li>
+                        <li>✓ Track your daily tasks</li>
+                        <li>✓ Mark tasks as complete</li>
+                        <li>✓ Access from anywhere</li>
+                    </ul>
+                </div>
+                <div class="col-md-6 text-center">
+                    <div class="feature-card">
+                        <h3>Start Managing Your Tasks Today!</h3>
+                        <p class="mb-3">Join thousands of users who are already organized with To-Do Task App.</p>
+                        <a href="register.php" class="btn btn-primary">Create Free Account</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="text-center">
+        <div class="container">
+            <p class="mb-0">&copy; 2026 To-Do Task App. All rights reserved.</p>
+        </div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-    <script>
-        function validate_form(){
-        
-            let due_date = document.getElementById("due_date").value;
-
-            let today = new Date();
-            today.setHours(0, 0, 0, 0);
-            let dueDate = new Date(due_date);
-
-            if (dueDate < today) {
-                alert("Due date cannot be in the past");
-                return false;
-            }
-            return true;
-        }
-    </script>
-
 </body>
 </html>

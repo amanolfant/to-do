@@ -82,7 +82,8 @@ $user_id = $_SESSION['user_id'] ?? '';
                                         $status = $row["status"] ?? 'pending';
                                         echo "<td style='background-color: " . ($status == 'completed' ? 'lightgreen' : 'lightcoral') . "'>" . $status . "</td>" ;
                                         echo "<td><a class='btn btn-success' href='complete_task.php?id=" . $row["id"] . "'>Complete</a>
-                                            <a class='btn btn-danger' href='delete_task.php?id=" . $row["id"] . "'>Delete</a></td>";
+                                            <a class='btn btn-danger' href='delete_task.php?id=" . $row["id"] . "'>Delete</a>
+                                            <a class='btn btn-warning' href='update_task.php?id=" . $row["id"] . "'>Update</a></td>";
                                         echo "</tr>";
                                     }
                                 }
