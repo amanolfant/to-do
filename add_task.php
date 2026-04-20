@@ -85,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </a>
             <span class="navbar-brand mb-0 h1">To-Do Task App</span>
             <div class="ms-auto">
-                <a href="display.php" class="btn btn-outline-light me-2">View Tasks</a>
+                <a href="display.php" class="btn btn-outline-light me-2">View Task</a>
                 <a href="logout.php" class="btn btn-danger" onclick="return confirm('Are you sure you want to logout?')">Logout</a>
             </div>
         </div>
